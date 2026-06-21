@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Database Murid Tahun 3 - Firestore</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #e8f5ff, #fff0f6, #f3ffe8);
+      margin: 0;
+      padding: 20px;
+      color: #222;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(106,27,154,0.18);
+      border-top: 10px solid #7b1fa2;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+      color: #6a1b9a;
+      letter-spacing: 1px;
+    }
+
+    .subtajuk {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #ffffff;
+      background: linear-gradient(90deg, #7b1fa2, #1976d2, #00897b);
+      padding: 10px;
+      border-radius: 25px;
+      font-weight: bold;
+    }
+
+    h2 {
+      color: #1976d2;
+      border-left: 6px solid #ff9800;
+      padding-left: 10px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 12px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 2px solid #d7c6f3;
+      border-radius: 8px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    button {
+      border: none;
+      padding: 11px 18px;
+      margin-top: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .btn-simpan {
+      background: linear-gradient(90deg, #43a047, #00897b);
+      color: white;
+    }
+
+    .btn-reset {
+      background: linear-gradient(90deg, #757575, #546e7a);
+      color: white;
+    }
+
+    .btn-search {
+      background: linear-gradient(90deg, #1976d2, #6a1b9a);
+      color: white;
+    }
+
+    .btn-edit {
+      background: linear-gradient(90deg, #fb8c00, #fdd835);
+      color: white;
+      margin-right: 6px;
+    }
+
+    .btn-padam {
+      background: linear-gradient(90deg, #e53935, #ad1457);
+      color: white;
+    }
+
+    .btn-cetak {
+      background: linear-gradient(90deg, #00acc1, #3949ab);
+      color: white;
+    }
+
+    .search-box {
+      background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+      padding: 18px;
+      border-radius: 12px;
+      margin: 25px 0;
+      border-left: 8px solid #7b1fa2;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .dash-card {
+      color: white;
+      padding: 18px;
+      border-radius: 16px;
+      text-align: center;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .dash-card span {
+      display: block;
+      font-size: 34px;
+      margin-top: 5px;
+    }
+
+    .ungu { background: linear-gradient(135deg, #7b1fa2, #ba68c8); }
+    .biru { background: linear-gradient(135deg, #1976d2, #64b5f6); }
+    .hijau { background: linear-gradient(135deg, #00897b, #4db6ac); }
+
+    .result {
+      margin-top: 20px;
+    }
+
+    .card {
+      border: 2px solid #e1bee7;
+      border-radius: 12px;
+      padding: 18px;
+      background: linear-gradient(135deg, #ffffff, #f8f0ff);
+      margin-bottom: 15px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #6a1b9a;
+    }
+
+    .info {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 8px;
+      margin: 6px 0;
+    }
+
+    .info b {
+      color: #333;
+    }
+
+    .nota {
+      background: #fff3cd;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 15px;
+      font-size: 14px;
+      border-left: 6px solid #ff9800;
+    }
+
+    @media (max-width: 750px) {
+      .grid, .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .info {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .form-section, .search-box, .btn-edit, .btn-padam, .btn-cetak, .nota, .dashboard {
+        display: none;
+      }
+
+      .container {
+        box-shadow: none;
+        border: none;
+      }
+
+      .card {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>DATABASE MURID TAHUN 3</h1>
+    <p class="subtajuk">Disediakan oleh: Cikgu Faridah binti Haji Japarali</p>
+
+    <div class="dashboard">
+      <div class="dash-card ungu">Jumlah Murid <span id="jumlahMurid">0</span></div>
+      <div class="dash-card biru">Rekod Dipaparkan <span id="jumlahPaparan">0</span></div>
+      <div class="dash-card hijau">Status <span id="statusDb">Online</span></div>
+    </div>
+
+    <div class="form-section">
+      <h2>Borang Maklumat Murid</h2>
+
+      <input type="hidden" id="docId" />
+
+      <div class="grid">
+        <div class="full">
+          <label>Nama Penuh Murid</label>
+          <input type="text" id="nama" placeholder="Contoh: Muhammad Danish bin Ahmad" />
+        </div>
+
+        <div>
+          <label>ID Sekolah</label>
+          <input type="text" id="idSekolah" placeholder="Contoh: T3-001" />
+        </div>
+
+        <div>
+          <label>Tarikh Lahir</label>
+          <input type="date" id="tarikhLahir" />
+        </div>
+
+        <div>
+          <label>No. Surat Beranak</label>
+          <input type="text" id="suratBeranak" placeholder="Contoh: 011234" />
+        </div>
+
+        <div>
+          <label>No. Bru-HIMS</label>
+          <input type="text" id="bruhims" placeholder="Contoh: BNHXXXXXXXX" />
+        </div>
+
+        <div class="full">
+          <label>Alamat Tempat Tinggal</label>
+          <textarea id="alamat" placeholder="Masukkan alamat lengkap murid"></textarea>
+        </div>
+
+        <div>
+          <label>Nama Penjaga Mudah Dihubungi</label>
+          <input type="text" id="namaPenjaga" placeholder="Contoh: Puan Siti binti Ahmad" />
+        </div>
+
+        <div>
+          <label>No. Telefon</label>
+          <input type="text" id="telefon" placeholder="Contoh: 7XXXXXX" />
+        </div>
+
+        <div>
+          <label>Kaitan dengan Murid</label>
+          <select id="kaitan">
+            <option value="">-- Pilih --</option>
+            <option>Ibu</option>
+            <option>Bapa</option>
+            <option>Penjaga</option>
+            <option>Datuk</option>
+            <option>Nenek</option>
+            <option>Abang</option>
+            <option>Kakak</option>
+            <option>Lain-lain</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-simpan" id="btnSimpan">Simpan ke Firebase</button>
+      <button class="btn-reset" id="btnReset">Kosongkan Borang</button>
+    </div>
+
+    <div class="search-box">
+      <h2>Carian Murid</h2>
+      <input type="text" id="searchInput" placeholder="Taip nama, ID sekolah, Bru-HIMS atau No. Surat Beranak" />
+      <button class="btn-search" id="btnSearch">Search</button>
+      <button class="btn-reset" id="btnPaparSemua">Papar Semua</button>
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <div class="nota">
+      <b>Nota:</b> Versi ini menggunakan Cloud Firestore. Data tidak disimpan dalam localStorage.
+      Semua rekod akan masuk ke koleksi <b>murid_tahun3</b> dalam Firebase Cikgu.
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      updateDoc,
+      deleteDoc,
+      doc,
+      serverTimestamp,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgRm2v_BD3JuPdHnYsoYyxu_HKQi4SAc8",
+      authDomain: "database-bacaan-murd-srbm.firebaseapp.com",
+      projectId: "database-bacaan-murd-srbm",
+      storageBucket: "database-bacaan-murd-srbm.firebasestorage.app",
+      messagingSenderId: "320334477436",
+      appId: "1:320334477436:web:b5a8d5041af8dfb57631f9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const koleksiMurid = collection(db, "murid_tahun3");
+
+    let senaraiMurid = [];
+
+    const el = (id) => document.getElementById(id);
+
+    function ambilDataBorang() {
+      return {
+        nama: el("nama").value.trim(),
+        namaLower: el("nama").value.trim().toLowerCase(),
+        idSekolah: el("idSekolah").value.trim(),
+        idSekolahLower: el("idSekolah").value.trim().toLowerCase(),
+        tarikhLahir: el("tarikhLahir").value,
+        suratBeranak: el("suratBeranak").value.trim(),
+        suratBeranakLower: el("suratBeranak").value.trim().toLowerCase(),
+        bruhims: el("bruhims").value.trim(),
+        bruhimsLower: el("bruhims").value.trim().toLowerCase(),
+        alamat: el("alamat").value.trim(),
+        namaPenjaga: el("namaPenjaga").value.trim(),
+        telefon: el("telefon").value.trim(),
+        kaitan: el("kaitan").value,
+        dikemaskiniPada: serverTimestamp()
+      };
+    }
+
+    async function simpanData() {
+      const murid = ambilDataBorang();
+
+      if (!murid.nama || !murid.idSekolah) {
+        alert("Sila isi sekurang-kurangnya Nama Penuh dan ID Sekolah.");
+        return;
+      }
+
+      const docId = el("docId").value;
+
+      try {
+        if (docId) {
+          await updateDoc(doc(db, "murid_tahun3", docId), murid);
+          alert("Data murid berjaya dikemas kini di Firebase.");
+        } else {
+          await addDoc(koleksiMurid, {
+            ...murid,
+            diciptaPada: serverTimestamp()
+          });
+          alert("Data murid berjaya disimpan ke Firebase.");
+        }
+
+        resetBorang();
+        await muatData();
+      } catch (error) {
+        console.error(error);
+        alert("Ralat menyimpan data. Sila semak sambungan internet atau Firestore Rules.");
+      }
+    }
+
+    async function muatData() {
+      try {
+        const q = query(koleksiMurid, orderBy("namaLower"));
+        const snapshot = await getDocs(q);
+
+        senaraiMurid = [];
+        snapshot.forEach((docSnap) => {
+          senaraiMurid.push({
+            docId: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+
+        el("jumlahMurid").textContent = senaraiMurid.length;
+        el("statusDb").textContent = "Online";
+        paparData(senaraiMurid);
+      } catch (error) {
+        console.error(error);
+        el("statusDb").textContent = "Error";
+        alert("Ralat membaca data. Sila semak Firestore Rules.");
+      }
+    }
+
+    function cariMurid() {
+      const keyword = el("searchInput").value.toLowerCase().trim();
+
+      if (keyword === "") {
+        alert("Sila taip nama, ID sekolah, Bru-HIMS atau No. Surat Beranak.");
+        return;
+      }
+
+      const hasil = senaraiMurid.filter(murid =>
+        (murid.namaLower || "").includes(keyword) ||
+        (murid.idSekolahLower || "").includes(keyword) ||
+        (murid.bruhimsLower || "").includes(keyword) ||
+        (murid.suratBeranakLower || "").includes(keyword)
+      );
+
+      paparData(hasil);
+    }
+
+    function paparData(data) {
+      const result = el("result");
+      el("jumlahPaparan").textContent = data.length;
+      result.innerHTML = "";
+
+      if (data.length === 0) {
+        result.innerHTML = "<p>Tiada data murid ditemui.</p>";
+        return;
+      }
+
+      data.forEach((murid) => {
+        const kad = document.createElement("div");
+        kad.className = "card";
+
+        kad.innerHTML = `
+          <h3>${murid.nama || "-"}</h3>
+          <div class="info"><b>ID Sekolah</b><span>${murid.idSekolah || "-"}</span></div>
+          <div class="info"><b>Tarikh Lahir</b><span>${murid.tarikhLahir || "-"}</span></div>
+          <div class="info"><b>No. Surat Beranak</b><span>${murid.suratBeranak || "-"}</span></div>
+          <div class="info"><b>No. Bru-HIMS</b><span>${murid.bruhims || "-"}</span></div>
+          <div class="info"><b>Alamat Tempat Tinggal</b><span>${murid.alamat || "-"}</span></div>
+          <div class="info"><b>Nama Penjaga</b><span>${murid.namaPenjaga || "-"}</span></div>
+          <div class="info"><b>No. Telefon</b><span>${murid.telefon || "-"}</span></div>
+          <div class="info"><b>Kaitan</b><span>${murid.kaitan || "-"}</span></div>
+
+          <button class="btn-edit">Edit</button>
+          <button class="btn-padam">Padam</button>
+          <button class="btn-cetak">Cetak Profil</button>
+        `;
+
+        kad.querySelector(".btn-edit").addEventListener("click", () => editData(murid));
+        kad.querySelector(".btn-padam").addEventListener("click", () => padamData(murid.docId));
+        kad.querySelector(".btn-cetak").addEventListener("click", () => {
+          result.innerHTML = "";
+          result.appendChild(kad);
+          window.print();
+          paparData(data);
+        });
+
+        result.appendChild(kad);
+      });
+    }
+
+    function editData(murid) {
+      el("docId").value = murid.docId;
+      el("nama").value = murid.nama || "";
+      el("idSekolah").value = murid.idSekolah || "";
+      el("tarikhLahir").value = murid.tarikhLahir || "";
+      el("suratBeranak").value = murid.suratBeranak || "";
+      el("bruhims").value = murid.bruhims || "";
+      el("alamat").value = murid.alamat || "";
+      el("namaPenjaga").value = murid.namaPenjaga || "";
+      el("telefon").value = murid.telefon || "";
+      el("kaitan").value = murid.kaitan || "";
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function padamData(docId) {
+      if (!confirm("Adakah Cikgu pasti mahu memadam data murid ini?")) return;
+
+      try {
+        await deleteDoc(doc(db, "murid_tahun3", docId));
+        alert("Data murid berjaya dipadam.");
+        await muatData();
+      } catch (error) {
+        console.error(error);
+        alert("Ralat memadam data.");
+      }
+    }
+
+    function resetBorang() {
+      el("docId").value = "";
+      el("nama").value = "";
+      el("idSekolah").value = "";
+      el("tarikhLahir").value = "";
+      el("suratBeranak").value = "";
+      el("bruhims").value = "";
+      el("alamat").value = "";
+      el("namaPenjaga").value = "";
+      el("telefon").value = "";
+      el("kaitan").value = "";
+    }
+
+    el("btnSimpan").addEventListener("click", simpanData);
+    el("btnReset").addEventListener("click", resetBorang);
+    el("btnSearch").addEventListener("click", cariMurid);
+    el("btnPaparSemua").addEventListener("click", () => paparData(senaraiMurid));
+
+    el("searchInput").addEventListener("keyup", (e) => {
+      if (e.key === "Enter") cariMurid();
+    });
+
+    muatData();
+  </script>
+</body>
+</html>
